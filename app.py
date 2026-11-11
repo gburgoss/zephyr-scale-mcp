@@ -1208,10 +1208,59 @@ async def get_issue_link_test_executions(issue_key: str) -> str:
     """
     url = f"{API_BASE}/issuelinks/{issue_key}/executions"
     data = await make_zephyr_request("GET", url)
-    
+
     if "error" in data:
         return f"Error: {data['error']}"
-    
+
+    return json.dumps(data, indent=2)
+
+@mcp.tool()
+async def get_test_cycle_links(test_cycle_id_or_key: str) -> str:
+    """Get the links (Jira issues and web links) of a test cycle.
+
+    Args:
+        test_cycle_id_or_key: The test cycle ID or key (e.g. 'PROJ-R123')
+    """
+    url = f"{API_BASE}/testcycles/{test_cycle_id_or_key}/links"
+    data = await make_zephyr_request("GET", url)
+
+    if "error" in data:
+        return f"Error: {data['error']}"
+
+    return json.dumps(data, indent=2)
+
+@mcp.tool()
+async def create_test_cycle_issue_link(test_cycle_id_or_key: str, issue_id: int) -> str:
+    """Create a link between a test cycle and a Jira issue.
+
+    Args:
+        test_cycle_id_or_key: The test cycle ID or key (e.g. 'PROJ-R123')
+        issue_id: The numeric Jira issue ID (not the key)
+    """
+    payload = {"issueId": issue_id}
+    url = f"{API_BASE}/testcycles/{test_cycle_id_or_key}/links/issues"
+    data = await make_zephyr_request("POST", url, data=payload)
+
+    if "error" in data:
+        return f"Error: {data['error']}"
+
+    return json.dumps(data, indent=2)
+
+@mcp.tool()
+async def create_test_execution_issue_link(test_execution_id_or_key: str, issue_id: int) -> str:
+    """Create a link between a test execution and a Jira issue.
+
+    Args:
+        test_execution_id_or_key: The test execution ID or key (e.g. 'PROJ-E123')
+        issue_id: The numeric Jira issue ID (not the key)
+    """
+    payload = {"issueId": issue_id}
+    url = f"{API_BASE}/testexecutions/{test_execution_id_or_key}/links/issues"
+    data = await make_zephyr_request("POST", url, data=payload)
+
+    if "error" in data:
+        return f"Error: {data['error']}"
+
     return json.dumps(data, indent=2)
 
 # =============================================================================
@@ -1274,7 +1323,9 @@ async def get_api_info() -> str:
             ],
             "issue_links": [
                 "get_issue_link_test_cases", "get_issue_link_test_cycles", 
-                "get_issue_link_test_plans", "get_issue_link_test_executions"
+                "get_issue_link_test_plans", "get_issue_link_test_executions",
+                "get_test_cycle_links", "create_test_cycle_issue_link",
+                "create_test_execution_issue_link"
             ],
             "utilities": [
                 "health_check", "get_api_info"
